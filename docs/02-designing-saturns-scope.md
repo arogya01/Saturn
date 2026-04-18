@@ -16,7 +16,9 @@ That means v1 should include:
 - local project metadata
 - direct and transitive dependencies
 - exact version installs first
-- a mock registry
+- npm package metadata lookup
+- tarball downloads from npm-hosted URLs
+- handling real network and missing-package failures
 - local package cache
 - install layout on disk
 - lockfile generation and reuse
@@ -25,6 +27,7 @@ That means v1 should include:
 That also means v1 should exclude:
 
 - publishing packages to a registry
+- private registries and authentication
 - supporting many registry protocols
 - workspace graph coordination
 - peer dependency negotiation
@@ -49,6 +52,7 @@ Your v1 promise should support the deployment milestone. If a feature does not h
 - Confusing "interesting" with "necessary."
 - Adding frontend-specific concerns before the Node app milestone is complete.
 - Treating deployment as a future concern rather than a forcing function for reproducibility.
+- Letting npm's full ecosystem surface area expand the v1 scope.
 - Expanding v1 to match a mature ecosystem tool.
 
 ## Checkpoint

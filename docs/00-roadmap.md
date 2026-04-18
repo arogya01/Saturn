@@ -28,7 +28,7 @@ You should expect to build gradually. Some chapters will feel conceptual. Others
 - a project manifest stored in `saturn.json`
 - direct dependency declarations
 - a lockfile stored in `saturn-lock.json`
-- package resolution from a mock registry
+- package resolution from the npm registry
 - downloading and caching package archives
 - unpacking and installing dependencies locally
 - running project scripts through `saturn run`
@@ -37,6 +37,7 @@ You should expect to build gradually. Some chapters will feel conceptual. Others
 ## What Saturn Will Not Support In V1
 - publishing packages
 - private registries and authentication
+- alternate registry protocols
 - workspaces or monorepos
 - peer dependency rules
 - native compilation workflows
@@ -47,7 +48,7 @@ These are not unimportant. They are intentionally deferred so the core path stay
 
 ## Milestones
 - Milestone 1: `saturn` understands project metadata.
-- Milestone 2: `saturn` can resolve and fetch packages from a mock registry.
+- Milestone 2: `saturn` can resolve and fetch packages from the npm registry.
 - Milestone 3: `saturn` can install dependency trees and record deterministic state.
 - Milestone 4: `saturn` can run project scripts.
 - Milestone 5: `saturn` can support a real Node web app locally.
@@ -64,6 +65,8 @@ Treat each chapter as a focused design and implementation session.
 - Keep notes on what felt obvious, what felt fragile, and what you still cannot explain clearly.
 
 If a chapter exposes confusion, stop and resolve it there. Package-manager complexity compounds quickly when gaps are carried forward.
+
+Because this course uses the live npm registry, expect real network behavior to be part of the lesson. Caching, retries, and failure handling are part of the core learning path rather than optional polish.
 
 ## Suggested Rhythm
 - one reading pass to understand the concept

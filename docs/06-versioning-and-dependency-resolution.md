@@ -18,7 +18,9 @@ A project manifest usually describes dependencies in a human-friendly way. A pac
 
 For learning, start with exact versions first. Exact versions let you focus on graph traversal, dependency expansion, and error handling without mixing in semver policy too early.
 
-Once exact versions work, you can introduce ranges as a second layer. That keeps the core question stable: how does `saturn` build a complete dependency graph from a small set of top-level requirements?
+With npm as the upstream registry, this means your first resolver pass should read exact versions from npm metadata and expand the graph from there. Keep the package set small and public at first so you can debug behavior without drowning in ecosystem noise.
+
+Once exact versions work, you can introduce ranges as a second layer. That keeps the core question stable: how does `saturn` build a complete dependency graph from a small set of top-level requirements? Later, ranges can be mapped onto npm's `versions` map and, where helpful, named tags such as `latest`.
 
 ## Saturn Focus
 Your resolver should produce a clear output:
@@ -33,7 +35,8 @@ Treat this as a pure reasoning phase. The resolver should decide what needs to e
 - Define the input and output of the resolver in plain language.
 - Decide how to represent a dependency graph so you can inspect it during debugging.
 - Decide how the resolver should respond to missing packages, missing versions, and cycles.
-- Implement exact-version support first in your design.
+- Implement exact-version support first in your design using npm metadata as the source of truth.
+- Choose a small curated set of npm packages for early testing so the graph remains inspectable.
 - Write down how range support would extend the resolver later without changing its core responsibility.
 
 ## Common Mistakes
@@ -47,6 +50,7 @@ You should be able to explain, step by step, how `saturn` will move from direct 
 
 ## Reflection Prompts
 - Why is exact-version support the right starting point for learning?
+- Why is a small curated npm package set better than arbitrary package choices early on?
 - What information should the resolver output that the installer cannot rediscover reliably on its own?
 - Where should cycle detection belong, and why?
 

@@ -29,6 +29,7 @@ The first question belongs to `saturn`. The second involves bundlers or framewor
 This extension should not change the core identity of `saturn`. It should show that:
 
 - the same manifest and lockfile ideas still apply
+- the same npm-backed dependency path still applies
 - script execution becomes the bridge to frontend tooling
 - package management is one layer in a larger app-build pipeline
 
