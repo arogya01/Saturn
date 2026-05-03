@@ -24,7 +24,7 @@ export async function loadManifest(projectDir: string): Promise<SaturnManifest> 
 }
 
 export function parseManifest(value: unknown): SaturnManifest {
-    if (!value || typeof value !== "object" || value instanceof Array) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
         throw new Error("Saturn manifest must be an object");
     }
 
@@ -34,12 +34,14 @@ export function parseManifest(value: unknown): SaturnManifest {
         throw new Error("Saturn manifest must have a name property of type string");
     }
 
-    if (obj.dependencies === undefined || obj.dependencies === null || typeof obj.dependencies !== "object") {
+    if (obj.dependencies === undefined || obj.dependencies === null || typeof obj.dependencies !== "object" || Array.isArray(obj.dependencies)) {
         throw new Error("Saturn manifest must have a dependencies property of type object");
     }
 
-    if (obj.scripts !== undefined && typeof obj.scripts !== "object") {
-        throw new Error("Saturn manifest must have a scripts property of type object");
+    if (obj.scripts !== undefined) {
+        if (obj.scripts !== null || typeof obj.scripts !== "object" || Array.isArray(obj.scripts)) {
+            throw new Error("Saturn manifest must have a scripts property of type object");
+        }
     }
 
     const dependencies: Record<string, string> = {};
@@ -66,8 +68,25 @@ export function parseManifest(value: unknown): SaturnManifest {
         }
     }
 
-    const version: string | undefined = typeof obj.version === "string" ? obj.version : undefined;
+    let version: string | undefined;
 
+    if (obj.version !== undefined) {
+        if (typeof obj.version !== "string") {
+            throw new Error("Saturn manifest version must be a string");
+        }
+
+        const v = obj.version.trim();
+
+        if (v.length === 0) {
+            throw new Error("Saturn manifest version must not be empty");
+        }
+
+        if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[0-9a-zA-Z-.]+)?$/.test(v)) {
+            throw new Error("Saturn manifest version must be a valid semantic version");
+        }
+
+        version = v;
+    }
 
     return {
         name: obj.name,
