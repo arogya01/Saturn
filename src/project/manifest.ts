@@ -18,7 +18,8 @@ export async function loadManifest(projectDir: string): Promise<SaturnManifest> 
         return parseManifest(data);
     }
     catch (error) {
-        throw new Error(`Failed to load Saturn manifest in ${projectDir}`);
+        throw new Error(`Failed to load Saturn manifest in ${projectDir}`, { cause: error });
+
     }
 
 }
@@ -39,7 +40,7 @@ export function parseManifest(value: unknown): SaturnManifest {
     }
 
     if (obj.scripts !== undefined) {
-        if (obj.scripts !== null || typeof obj.scripts !== "object" || Array.isArray(obj.scripts)) {
+        if (obj.scripts === null || typeof obj.scripts !== "object" || Array.isArray(obj.scripts)) {
             throw new Error("Saturn manifest must have a scripts property of type object");
         }
     }
@@ -47,12 +48,29 @@ export function parseManifest(value: unknown): SaturnManifest {
     const dependencies: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(obj.dependencies)) {
-        if (typeof value !== "string") {
+
+        if (typeof key !== "string") {
             throw new Error(`Saturn manifest dependency "${key}" must be a string`);
         }
 
+        const trimmedKey = key.trim();
+        if (trimmedKey.length === 0) {
+            throw new Error(`Saturn manifest dependency key must not be empty`);
+        }
 
-        dependencies[key] = value;
+        if (typeof value !== "string") {
+            throw new Error(`Saturn manifest dependency "${key} - ${value}" must be a string`);
+        }
+
+        const trimmedValue = value.trim();
+        if (trimmedValue.length === 0) {
+            throw new Error(`Saturn manifest dependency "${key}" must not be empty`);
+        }
+
+        if (!isValidSemVer(trimmedValue)) throw new Error(`Saturn manifest dependency "${key}" must have valid semver`)
+
+
+        dependencies[trimmedKey] = trimmedValue;
 
     }
 
@@ -64,7 +82,21 @@ export function parseManifest(value: unknown): SaturnManifest {
                 throw new Error(`Saturn manifest script "${key}" must be a string`);
             }
 
-            scripts[key] = value;
+            if (typeof key !== "string") {
+                throw new Error(`Saturn manifest script key must be a string`);
+            }
+
+            const trimmedKey = key.trim();
+            if (trimmedKey.length === 0) {
+                throw new Error(`Saturn manifest script key must not be empty`);
+            }
+
+            const trimmedValue = value.trim();
+            if (trimmedValue.length === 0) {
+                throw new Error(`Saturn manifest script "${key}" must not be empty`);
+            }
+
+            scripts[trimmedKey] = trimmedValue;
         }
     }
 
@@ -88,11 +120,27 @@ export function parseManifest(value: unknown): SaturnManifest {
         version = v;
     }
 
+    let name: string = obj.name.trim();
+    if (name.length === 0) {
+        throw new Error("Saturn manifest name must not be empty");
+    }
+
     return {
-        name: obj.name,
+        name,
         dependencies,
         scripts,
         version
     }
 
+}
+
+function isValidSemVer(value: string) {
+    // 1.2.5 is what we want, not sure what the regex will be for this. 
+    // We want the following: 
+    // 0.0.0 is valid 
+    // 1.0.0 is valid 
+
+
+    // so the regex is: 
+    return value.match(/^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9\-.]+)?$/) !== null;
 }
