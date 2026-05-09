@@ -1,4 +1,4 @@
-import { readFile } from "fs/promises";
+import { readFile , writeFile } from "fs/promises";
 import { join } from "path";
 
 export type SaturnManifest = {
@@ -132,6 +132,25 @@ export function parseManifest(value: unknown): SaturnManifest {
         version
     }
 
+}
+
+export function createDefaultManifest(): SaturnManifest {
+    return {
+        name: "default-project",
+        dependencies: {},
+        scripts: {}
+    }
+}
+
+export async function writeManifest(projectDir: string, manifest: SaturnManifest) {    
+    try{
+        const filePath = join(projectDir, 'saturn.json');
+        await writeFile(filePath, JSON.stringify(manifest, null, 2));
+        console.log(`Manifest written to ${filePath}`);
+    } catch (error) {
+        throw new Error(`Failed to write manifest: ${error}`);
+    }
+    
 }
 
 function isValidSemVer(value: string) {
