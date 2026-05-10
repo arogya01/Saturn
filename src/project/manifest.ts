@@ -134,19 +134,22 @@ export function parseManifest(value: unknown): SaturnManifest {
 
 }
 
-export function createDefaultManifest(): SaturnManifest {
-    return {
-        name: "default-project",
+export function createDefaultManifest(name:string): SaturnManifest {
+    // default should be created as the same validation layer
+    const defaultManifest = {
+        name: name,
         dependencies: {},
         scripts: {}
-    }
+    };
+    
+    const parsedManifest = parseManifest(defaultManifest);
+    return parsedManifest;
 }
 
 export async function writeManifest(projectDir: string, manifest: SaturnManifest) {    
     try{
         const filePath = join(projectDir, 'saturn.json');
-        await writeFile(filePath, JSON.stringify(manifest, null, 2));
-        console.log(`Manifest written to ${filePath}`);
+        await writeFile(filePath, JSON.stringify(manifest, null, 2));        
     } catch (error) {
         throw new Error(`Failed to write manifest: ${error}`);
     }
