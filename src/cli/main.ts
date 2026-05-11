@@ -6,13 +6,10 @@ const args = process.argv.slice(2);
 const command = args[0]; 
 const projectName = args[1];
 const projectDir = args[2];
-console.log(`Command: ${command}`);
-console.log(`Args: ${args}`);
 
 
 switch(command){
-    case 'init':
-        console.log('Initializing project...');
+    case 'init':        
         await runInitWorkflow({
             projectName,
             projectDir
