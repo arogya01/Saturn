@@ -10,16 +10,20 @@ export type PackageVersionMetaData = {
 type NpmPackageVersionMetaData = {
     name: string;
     version: string;
-    dependencies: Record<string, string>;
+    dependencies?: Record<string, string>;
     dist: {
         tarball: string;
         integrity?: string;
     }
 }
 
+type NpmPackageMetaData = {
+    versions: Record<string, unknown>;
+}
+
 export async function fetchPackageVersionMetaData(name: string, version: string): Promise<PackageVersionMetaData> {
     try {
-        const res = await fetch(`https://registry.npmjs.org/${name}/${version}`);
+        const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}/${version}`);
         if (!res.ok) {
             throw new Error(`Failed to fetch package version metadata for ${name}@${version}`);
         }
@@ -31,6 +35,20 @@ export async function fetchPackageVersionMetaData(name: string, version: string)
         }
         throw error;
     }
+}
+
+export async function fetchPackageVersions(name: string): Promise<string[]> {
+    const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`);
+    if (!res.ok) {
+        throw new Error(`Failed to fetch package metadata for ${name}`);
+    }
+
+    const data = await res.json();
+    if (!isPackageMetaDataValid(data)) {
+        throw new Error(`Invalid package metadata for ${name}`);
+    }
+
+    return Object.keys(data.versions);
 }
 
 
@@ -55,6 +73,18 @@ function isPkgMetaDataValid(data: unknown): data is NpmPackageVersionMetaData {
     if (!("tarball" in data.dist) || typeof data.dist.tarball !== "string") return false;
     if (("integrity" in data.dist)) {
         if (typeof data.dist.integrity !== "string") return false;
+    }
+
+    return true;
+}
+
+function isPackageMetaDataValid(data: unknown): data is NpmPackageMetaData {
+    if (typeof data !== "object" || data === null) {
+        return false;
+    }
+
+    if (!("versions" in data) || typeof data.versions !== "object" || data.versions === null || Array.isArray(data.versions)) {
+        return false;
     }
 
     return true;

@@ -1,5 +1,6 @@
 import { loadManifest } from "../project/manifest";
-import { fetchPackageVersionMetaData } from "../registry/client";
+import { fetchPackageVersionMetaData, fetchPackageVersions } from "../registry/client";
+import { resolveDependencyGraph } from "../resolver/graph";
 
 export async function runInstallWorkflow() {
     const projectDir = process.cwd();
@@ -7,5 +8,12 @@ export async function runInstallWorkflow() {
     const dependencyNames = Object.keys(manifest.dependencies);
     console.log(`Found ${dependencyNames.length} direct dependencies`);
 
+    const graph = await resolveDependencyGraph(
+        manifest.dependencies,
+        fetchPackageVersionMetaData,
+        fetchPackageVersions
+    );
+
+    console.log(`Resolved ${graph.packages.size} packages`);
 
 }

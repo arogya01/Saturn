@@ -1,4 +1,5 @@
 import { PackageVersionMetaData } from "../registry/client";
+import { maxSatisfying, valid } from "semver";
 
 
 type ResolvedGraph = {
@@ -7,19 +8,24 @@ type ResolvedGraph = {
 
 type DependencyRequest = {
     name: string;
-    version: string;
+    versionSpec: string;
 }
 
 type PackageFetcher = (name: string, version: string) => Promise<PackageVersionMetaData>;
+type PackageVersionsFetcher = (name: string) => Promise<string[]>;
 
-// the whole task of this function is to take the manifest (getManifest) -> parse the dependencies. 
-export async function resolveDependencyGraph(dependencies: Record<string, string>, fetchPackage: PackageFetcher): Promise<ResolvedGraph> {
+
+export async function resolveDependencyGraph(
+    dependencies: Record<string, string>,
+    fetchPackage: PackageFetcher,
+    fetchPackageVersions: PackageVersionsFetcher
+): Promise<ResolvedGraph> {
 
     const queue = new Queue<DependencyRequest>();
     const packages = new Map<string, PackageVersionMetaData>();
 
-    for (const [name, version] of Object.entries(dependencies)) {
-        queue.enqueue({ name, version });
+    for (const [name, versionSpec] of Object.entries(dependencies)) {
+        queue.enqueue({ name, versionSpec });
     }
 
     while (!queue.isEmpty()) {
@@ -28,19 +34,15 @@ export async function resolveDependencyGraph(dependencies: Record<string, string
             continue;
         }
 
-        const currPackageKey = `${top.name}@${top.version}`;
+        const exactVersion = await resolveVersionSpec(top.name, top.versionSpec, fetchPackageVersions);
+        const currPackageKey = createPackageKey(top.name, exactVersion);
         if (!packages.has(currPackageKey)) {
-            const { name, version } = top;
-            const pkg = await fetchPackage(name, version);
+            const pkg = await fetchPackage(top.name, exactVersion);
             const childDeps = pkg.dependencies;
 
             if (childDeps) {
-                for (const [name, version] of Object.entries(childDeps)) {
-                    const child = { name, version };
-                    const childKey = `${name}@${version}`
-                    if (!packages.has(childKey)) {
-                        queue.enqueue(child);
-                    }
+                for (const [name, versionSpec] of Object.entries(childDeps)) {
+                    queue.enqueue({ name, versionSpec });
                 }
             }
 
@@ -51,6 +53,30 @@ export async function resolveDependencyGraph(dependencies: Record<string, string
     }
 
     return { packages };
+}
+
+async function resolveVersionSpec(
+    name: string,
+    versionSpec: string,
+    fetchPackageVersions: PackageVersionsFetcher
+): Promise<string> {
+    const exactVersion = valid(versionSpec);
+    if (exactVersion) {
+        return exactVersion;
+    }
+
+    const availableVersions = await fetchPackageVersions(name);
+    const resolvedVersion = maxSatisfying(availableVersions, versionSpec);
+
+    if (!resolvedVersion) {
+        throw new Error(`Unable to resolve ${name}@${versionSpec}`);
+    }
+
+    return resolvedVersion;
+}
+
+function createPackageKey(name: string, version: string): string {
+    return `${name}@${version}`;
 }
 
 
@@ -76,5 +102,4 @@ class Queue<T> {
         return this.items.length === 0;
     }
 };
-
 

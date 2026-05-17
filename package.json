@@ -23,6 +23,10 @@
   "homepage": "https://github.com/arogya01/Saturn#readme",
   "devDependencies": {
     "@types/node": "25.6.0",
+    "@types/semver": "7.7.1",
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "semver": "7.8.0"
   }
 }
