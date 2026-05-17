@@ -1,4 +1,4 @@
-import { readFile , writeFile } from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 
 export type SaturnManifest = {
@@ -24,7 +24,7 @@ export async function loadManifest(projectDir: string): Promise<SaturnManifest> 
 
 }
 
-export function parseManifest(value: unknown): SaturnManifest {
+function parseManifest(value: unknown): SaturnManifest {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
         throw new Error("Saturn manifest must be an object");
     }
@@ -134,26 +134,26 @@ export function parseManifest(value: unknown): SaturnManifest {
 
 }
 
-export function createDefaultManifest(name:string): SaturnManifest {
+export function createDefaultManifest(name: string): SaturnManifest {
     // default should be created as the same validation layer
     const defaultManifest = {
         name: name,
         dependencies: {},
         scripts: {}
     };
-    
+
     const parsedManifest = parseManifest(defaultManifest);
     return parsedManifest;
 }
 
-export async function writeManifest(projectDir: string, manifest: SaturnManifest) {    
-    try{
+export async function writeManifest(projectDir: string, manifest: SaturnManifest) {
+    try {
         const filePath = join(projectDir, 'saturn.json');
-        await writeFile(filePath, JSON.stringify(manifest, null, 2));        
+        await writeFile(filePath, JSON.stringify(manifest, null, 2));
     } catch (error) {
         throw new Error(`Failed to write manifest: ${error}`);
     }
-    
+
 }
 
 function isValidSemVer(value: string) {
