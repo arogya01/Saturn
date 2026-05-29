@@ -104,7 +104,7 @@ function transformNpmResponse(data: unknown): PackageVersionMetaData {
     }
 }
 
-async function downloadTarball(url: string): Promise<Buffer> {
+export async function downloadTarball(url: string): Promise<Buffer> {
     const res = await fetch(url);
     if (!res.ok) {
         throw new Error(`Failed to download tarball from ${url}`);
