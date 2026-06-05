@@ -45,8 +45,10 @@ export async function ensureTarballCached({
 
 function verifyIntegrity(buffer: Buffer, expectedIntegrity?: string): boolean {
   if (!expectedIntegrity) return true;
+  const [algorithm, integrity] = expectedIntegrity.split("-");
+  const actual = createHash(algorithm as any)
+    .update(buffer)
+    .digest("base64");
 
-  const actual = createHash("sha512").update(buffer).digest("base64");
-
-  return actual === expectedIntegrity;
+  return actual === integrity;
 }

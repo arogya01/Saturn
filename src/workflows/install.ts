@@ -22,8 +22,11 @@ export async function runInstallWorkflow() {
     console.log(`Caching ${packageKey}`);
 
     await ensureTarballCached({
-      ...packageMetadata,
       projectDir,
+      name: packageMetadata.name,
+      version: packageMetadata.version,
+      tarballUrl: packageMetadata.tarballUrl,
+      expectedIntegrity: packageMetadata.integrity,
     });
   }
   console.log(`Cached ${graph.packages.size} packages`);
