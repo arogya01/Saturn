@@ -1,4 +1,7 @@
+import { rmSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { ensureTarballCached } from "../cache/store";
+import { extractTarball } from "../installer/extract";
 import { loadManifest } from "../project/manifest";
 import {
   fetchPackageVersionMetaData,
@@ -18,16 +21,25 @@ export async function runInstallWorkflow() {
     fetchPackageVersions,
   );
 
+  rmSync("node_modules", { recursive: true, force: true });
+  await mkdir("./node_modules", { recursive: true });
+
   for (const [packageKey, packageMetadata] of graph.packages) {
     console.log(`Caching ${packageKey}`);
 
-    await ensureTarballCached({
+    const tarballPath = await ensureTarballCached({
       projectDir,
       name: packageMetadata.name,
       version: packageMetadata.version,
       tarballUrl: packageMetadata.tarballUrl,
       expectedIntegrity: packageMetadata.integrity,
     });
+
+    // extract the tarball
+    await extractTarball(
+      tarballPath,
+      `${projectDir}/node_modules/${packageMetadata.name}`,
+    );
   }
   console.log(`Cached ${graph.packages.size} packages`);
 }

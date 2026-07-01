@@ -1,11 +1,11 @@
-import { rm } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { extract } from "tar";
 
-export async function extractTarball(path: string) {
-  rm(".saturn/node_modules");
+export async function extractTarball(tarballPath: string, targetDir: string) {
+  await mkdir(targetDir, { recursive: true });
   await extract({
-    file: path,
-    cwd: process.cwd(),
+    file: tarballPath,
+    cwd: targetDir,
     strip: 1,
   });
 }
